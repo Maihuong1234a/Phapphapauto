@@ -1,0 +1,9 @@
+# Git ignore - Không upload các file nhạy cảm lên GitHub
+config.json
+caption_temp.txt
+activity.log
+*.log
+*.bat
+*.ps1
+__pycache__/
+*.pyc

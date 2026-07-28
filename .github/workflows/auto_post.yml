@@ -1,0 +1,55 @@
+name: 🌸 Auto Post Phật Pháp
+
+on:
+  schedule:
+    # Tất cả giờ UTC, tương đương giờ Việt Nam (UTC+7)
+    - cron: '0 23 * * *'    # 06:00 VN - Buổi sáng
+    - cron: '30 4 * * *'    # 11:30 VN - Buổi trưa
+    - cron: '0 10 * * *'    # 17:00 VN - Buổi chiều
+    - cron: '0 13 * * *'    # 20:00 VN - Buổi tối
+
+  # Cho phép chạy thủ công để test
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Ly do chay thu cong'
+        required: false
+        default: 'Test thu cong'
+
+jobs:
+  post_to_facebook:
+    name: Đăng bài lên Facebook
+    runs-on: ubuntu-latest
+    
+    # Cấp quyền ghi để commit post_log.json
+    permissions:
+      contents: write
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🐍 Cài đặt Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 📦 Cài đặt thư viện
+        run: pip install requests
+
+      - name: 🚀 Đăng bài lên Facebook
+        env:
+          PAGE_ID:    ${{ secrets.PAGE_ID }}
+          USER_TOKEN: ${{ secrets.USER_TOKEN }}
+          PAGE_TOKEN: ${{ secrets.PAGE_TOKEN }}
+        run: python post_to_facebook.py
+
+      - name: 💾 Lưu log đã đăng
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add post_log.json
+          git diff --staged --quiet || git commit -m "📝 Cap nhat log dang bai $(date +'%Y-%m-%d %H:%M') UTC"
+          git push
