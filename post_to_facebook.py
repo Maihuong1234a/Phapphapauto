@@ -24,15 +24,25 @@ VN_TZ = timezone(timedelta(hours=7))
 # ---- Lấy Page Token mới từ User Token ----
 def get_fresh_page_token():
     try:
-        url = f"https://graph.facebook.com/v19.0/me/accounts"
+        url = "https://graph.facebook.com/v19.0/me/accounts"
+        print(f"[INFO] Dang lay Page Token tu User Token...")
         resp = requests.get(url, params={"access_token": USER_TOKEN}, timeout=10)
         data = resp.json()
-        if "data" in data and len(data["data"]) > 0:
+        print(f"[DEBUG] Phan hoi tu Facebook: {json.dumps(data)[:300]}")
+        if "error" in data:
+            err = data["error"]
+            print(f"[ERROR] User Token bi loi: code={err.get('code')} msg={err.get('message')}")
+            print(f"[ERROR] Token het han! Can lay token moi tu Facebook Graph Explorer")
+            print(f"[ERROR] Vao: https://developers.facebook.com/tools/explorer/")
+        elif "data" in data and len(data["data"]) > 0:
             token = data["data"][0]["access_token"]
-            print(f"[OK] Lay Page Token moi thanh cong")
+            print(f"[OK] Lay Page Token moi thanh cong! Page: {data['data'][0].get('name','')}")
             return token
+        else:
+            print(f"[WARN] Khong tim thay Page nao trong tai khoan")
     except Exception as e:
         print(f"[WARN] Khong lay duoc Page Token moi: {e}")
+    print(f"[INFO] Dung Page Token co san tu SECRET")
     return PAGE_TOKEN
 
 
